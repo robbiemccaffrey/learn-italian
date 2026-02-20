@@ -1,190 +1,154 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import MaterialsService from '../services/materialsService';
+import { studyContent, StudySection } from '../data/studyContent';
 
 export default function StudyHub() {
-  const [materialsAvailable, setMaterialsAvailable] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [materialCount, setMaterialCount] = useState(0);
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    // Check if materials are available
-    const checkMaterials = async () => {
-      try {
-        const available = await MaterialsService.checkMaterialsAvailable();
-        setMaterialsAvailable(available);
-
-        if (available) {
-          const status = await MaterialsService.getProcessingStatus();
-          setMaterialCount(status.materialCount);
-        } else {
-          // Poll until materials are ready
-          pollUntilReady();
-        }
-      } catch (error) {
-        console.error('Error checking materials:', error);
-        setMaterialsAvailable(false);
-      } finally {
-        setIsLoading(false);
+  const toggleSection = (id: string) => {
+    setExpandedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
       }
-    };
-
-    checkMaterials();
-  }, []);
-
-  // Auto-poll until materials ready (every 3 seconds)
-  const pollUntilReady = () => {
-    const interval = setInterval(async () => {
-      try {
-        const available = await MaterialsService.checkMaterialsAvailable();
-        if (available) {
-          clearInterval(interval);
-          setMaterialsAvailable(true);
-          const status = await MaterialsService.getProcessingStatus();
-          setMaterialCount(status.materialCount);
-        }
-      } catch (error) {
-        console.error('Error polling materials:', error);
-      }
-    }, 3000);
-
-    // Cleanup after 5 minutes
-    setTimeout(() => clearInterval(interval), 5 * 60 * 1000);
+      return next;
+    });
   };
 
-  const contextCards = [
-    {
-      title: 'Daily Life',
-      description: 'Food & Dining, Shopping & Services, Daily Routines',
-      icon: '🍝',
-      path: '/daily-life',
-      color: 'from-orange-500 to-red-500',
-    },
-    {
-      title: 'Communication',
-      description: 'Conversations, Grammar in Context, Speaking Exercises',
-      icon: '🗣️',
-      path: '/communication',
-      color: 'from-blue-500 to-cyan-500',
-    },
-    {
-      title: 'Deep Dive',
-      description: 'Grammar Reference, Vocabulary Builder, Culture & Reading',
-      icon: '📚',
-      path: '/deep-dive',
-      color: 'from-purple-500 to-indigo-500',
-    },
-    {
-      title: 'Resources',
-      description: 'Reference Books, Lesson Notes',
-      icon: '📖',
-      path: '/resources',
-      color: 'from-green-500 to-emerald-500',
-    },
-  ];
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading Study Hub...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (materialsAvailable === false) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md text-center">
-          <div className="text-6xl mb-4">📚</div>
-          <h2 className="text-2xl font-bold text-slate-800 mb-4">Loading Materials...</h2>
-          <p className="text-slate-600 mb-6">
-            Your study materials are being processed. This may take a few minutes.
-          </p>
-          <div className="animate-pulse">
-            <div className="h-2 bg-purple-200 rounded-full mb-2"></div>
-            <div className="h-2 bg-purple-200 rounded-full"></div>
-          </div>
-          <p className="text-sm text-slate-500 mt-4">
-            You can continue using other pages while materials load.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  const totalPhrases = studyContent.reduce(
+    (acc, s) => acc + s.subsections.reduce((a, sub) => a + sub.phrases.length, 0),
+    0
+  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 p-4">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 pb-24 md:pb-8">
+      <div className="max-w-4xl mx-auto px-4 py-6 md:py-8">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-slate-800 mb-2">
-            📚 Study Hub
+        <div className="text-center mb-6">
+          <h1 className="text-2xl md:text-4xl font-bold text-slate-800 mb-1">
+            Study Hub
           </h1>
-          <p className="text-slate-600">
-            Your Italian learning materials organized by context
+          <p className="text-sm md:text-base text-slate-600">
+            {studyContent.length} topics &middot; {totalPhrases} phrases
           </p>
-          {materialCount > 0 && (
-            <p className="text-sm text-slate-500 mt-2">
-              {materialCount} materials available
-            </p>
-          )}
         </div>
 
-        {/* Context Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {contextCards.map((card) => (
-            <Link
-              key={card.path}
-              to={card.path}
-              className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow transform hover:scale-105"
-            >
-              <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${card.color} flex items-center justify-center text-3xl mb-4`}>
-                {card.icon}
-              </div>
-              <h3 className="text-xl font-semibold text-slate-800 mb-2">
-                {card.title}
-              </h3>
-              <p className="text-slate-600 text-sm">
-                {card.description}
-              </p>
-              <div className="mt-4 text-purple-600 font-medium">
-                Explore →
-              </div>
-            </Link>
+        {/* Quick Access */}
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          <Link
+            to="/verbs"
+            className="text-center p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow"
+          >
+            <div className="text-xl md:text-2xl mb-1">📖</div>
+            <div className="text-xs md:text-sm font-medium text-slate-700">Verbs</div>
+          </Link>
+          <Link
+            to="/pronunciation"
+            className="text-center p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow"
+          >
+            <div className="text-xl md:text-2xl mb-1">🎤</div>
+            <div className="text-xs md:text-sm font-medium text-slate-700">Pronunciation</div>
+          </Link>
+          <Link
+            to="/flashcards"
+            className="text-center p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow"
+          >
+            <div className="text-xl md:text-2xl mb-1">🃏</div>
+            <div className="text-xs md:text-sm font-medium text-slate-700">Flashcards</div>
+          </Link>
+        </div>
+
+        {/* Study Sections */}
+        <div className="space-y-3">
+          {studyContent.map((section) => (
+            <SectionCard
+              key={section.id}
+              section={section}
+              isExpanded={expandedSections.has(section.id)}
+              onToggle={() => toggleSection(section.id)}
+            />
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
 
-        {/* Quick Stats */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-semibold text-slate-800 mb-4">Quick Access</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Link
-              to="/flashcards"
-              className="text-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
-            >
-              <div className="text-2xl mb-2">🃏</div>
-              <div className="text-sm font-medium text-slate-700">Flashcards</div>
-            </Link>
-            <Link
-              to="/verbs"
-              className="text-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
-            >
-              <div className="text-2xl mb-2">📚</div>
-              <div className="text-sm font-medium text-slate-700">Verb Practice</div>
-            </Link>
-            <Link
-              to="/pronunciation"
-              className="text-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
-            >
-              <div className="text-2xl mb-2">🎤</div>
-              <div className="text-sm font-medium text-slate-700">Pronunciation</div>
-            </Link>
+function SectionCard({
+  section,
+  isExpanded,
+  onToggle,
+}: {
+  section: StudySection;
+  isExpanded: boolean;
+  onToggle: () => void;
+}) {
+  const phraseCount = section.subsections.reduce((a, s) => a + s.phrases.length, 0);
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      {/* Section Header */}
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between p-4 md:p-5 text-left hover:bg-slate-50 transition-colors"
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          <div
+            className={`w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br ${section.color} flex items-center justify-center text-lg md:text-xl shrink-0`}
+          >
+            {section.icon}
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-base md:text-lg font-semibold text-slate-800 truncate">
+              {section.title}
+            </h2>
+            <p className="text-xs md:text-sm text-slate-500">
+              {section.subsections.length} sections &middot; {phraseCount} phrases
+            </p>
           </div>
         </div>
-      </div>
+        <svg
+          className={`w-5 h-5 text-slate-400 shrink-0 transition-transform ${
+            isExpanded ? 'rotate-180' : ''
+          }`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {/* Expanded Content */}
+      {isExpanded && (
+        <div className="border-t border-slate-100 px-4 pb-4 md:px-5 md:pb-5">
+          {section.subsections.map((sub, i) => (
+            <div key={i} className={i > 0 ? 'mt-5' : 'mt-4'}>
+              <h3 className="text-sm font-semibold text-slate-700 mb-2 uppercase tracking-wide">
+                {sub.title}
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                {sub.phrases.map((phrase, j) => (
+                  <div
+                    key={j}
+                    className="flex items-baseline justify-between gap-2 px-3 py-2 rounded-lg bg-slate-50 hover:bg-indigo-50 transition-colors"
+                  >
+                    <span className="font-medium text-slate-800 text-sm md:text-base">
+                      {phrase.italian}
+                    </span>
+                    <span className="text-xs md:text-sm text-slate-500 text-right shrink-0">
+                      {phrase.english}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

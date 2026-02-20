@@ -433,7 +433,7 @@ export default function Pronunciation() {
   }, [isPlayingAlphabet]);
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8">
+    <div className="min-h-screen bg-slate-50 p-4 pb-24 md:p-8">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <header className="mb-8">

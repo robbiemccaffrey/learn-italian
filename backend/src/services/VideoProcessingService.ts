@@ -235,7 +235,7 @@ export class VideoProcessingService {
   }> {
     // In a real implementation, you would look up the actual segment files
     // For now, return mock URLs with correct extensions
-    const baseUrl = process.env.API_BASE_URL || 'http://localhost:3001';
+    const baseUrl = process.env.API_BASE_URL || 'http://localhost:8473';
     
     return {
       audio: `${baseUrl}/processed/audio/${videoId}_segment_${segmentId}.m4a`,

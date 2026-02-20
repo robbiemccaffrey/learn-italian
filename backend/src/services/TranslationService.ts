@@ -1,23 +1,12 @@
-const { Translate } = require('@google-cloud/translate').v2;
+import { ChatGPTService } from './ChatGPTService';
 
 export class TranslationService {
-  private static translateClient: any = null;
-  private static apiKey = process.env.GOOGLE_TRANSLATE_API_KEY;
-
   static {
-    // Initialize Google Translate client if API key is available
-    if (this.apiKey) {
-      try {
-        this.translateClient = new Translate({
-          projectId: 'italian-learning-app',
-          key: this.apiKey
-        });
-        console.log('✅ Google Translate client initialized');
-      } catch (error) {
-        console.warn('⚠️ Failed to initialize Google Translate client:', error);
-      }
+    // Check if OpenAI API key is available
+    if (process.env.OPENAI_API_KEY) {
+      console.log('✅ ChatGPT translation service initialized');
     } else {
-      console.log('ℹ️ No Google Translate API key found, using mock translations');
+      console.log('ℹ️ No OpenAI API key found, using mock translations');
     }
   }
 
@@ -27,16 +16,13 @@ export class TranslationService {
     targetLang: string = 'en'
   ): Promise<string> {
     try {
-      // If we have a real translation client, use it
-      if (this.translateClient) {
-        const [translation] = await this.translateClient.translate(text, {
-          from: sourceLang,
-          to: targetLang
-        });
+      // Use ChatGPT for translation
+      if (process.env.OPENAI_API_KEY) {
+        const translation = await ChatGPTService.translate(text, sourceLang, targetLang);
         return translation;
       }
 
-      // Fallback to mock translations
+      // Fallback to mock translations if no API key
       return this.getMockTranslation(text);
     } catch (error) {
       console.error('Translation error:', error);
@@ -51,11 +37,12 @@ export class TranslationService {
     targetLang: string = 'en'
   ): Promise<string[]> {
     try {
-      if (this.translateClient) {
-        const [translations] = await this.translateClient.translate(texts, {
-          from: sourceLang,
-          to: targetLang
-        });
+      // Use ChatGPT for batch translation
+      if (process.env.OPENAI_API_KEY) {
+        // Translate each text individually (ChatGPT doesn't have native batch support)
+        const translations = await Promise.all(
+          texts.map(text => ChatGPTService.translate(text, sourceLang, targetLang))
+        );
         return translations;
       }
 
@@ -69,12 +56,8 @@ export class TranslationService {
 
   static async detectLanguage(text: string): Promise<string> {
     try {
-      if (this.translateClient) {
-        const [detection] = await this.translateClient.detect(text);
-        return detection.language;
-      }
-
       // Simple language detection based on common patterns
+      // (ChatGPT doesn't have a dedicated language detection endpoint)
       if (/[àèéìíîòóùú]/.test(text)) {
         return 'it'; // Italian
       }

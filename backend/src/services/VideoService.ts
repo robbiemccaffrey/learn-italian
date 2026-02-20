@@ -70,7 +70,7 @@ export class VideoService {
       await VideoProcessingService.processSegments(videoId, segments);
 
       // Generate URLs for processed segments
-      const baseUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+      const baseUrl = process.env.BACKEND_URL || 'http://localhost:8473';
       segments.forEach((segment) => {
         segment.audioUrl = `${baseUrl}/processed/audio/${videoId}_${segment.startTime}_${segment.endTime}.mp3`;
         segment.videoUrl = `${baseUrl}/processed/video/${videoId}_${segment.startTime}_${segment.endTime}.mp4`;

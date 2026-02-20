@@ -1,6 +1,5 @@
 import VerbPractice from "./Pages/VerbPractice";
 import Pronunciation from "./Pages/Pronunciation";
-import VideoPractice from "./Pages/VideoPractice";
 import Flashcards from "./Pages/Flashcards";
 import StudyHub from "./Pages/StudyHub";
 import DailyLife from "./Pages/DailyLife";
@@ -14,12 +13,11 @@ import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-do
 // Navigation Component
 function Navigation() {
   const location = useLocation();
-  
+
       const navItems = [
         { path: "/study-hub", label: "Study Hub", icon: "📚" },
         { path: "/verbs", label: "Verb Practice", icon: "📖" },
         { path: "/pronunciation", label: "Pronunciation", icon: "🎤" },
-        { path: "/video-practice", label: "Video Practice", icon: "🎥" },
         { path: "/flashcards", label: "Flashcards", icon: "🃏" },
       ];
 
@@ -69,7 +67,6 @@ export default function App() {
               <Route path="/resources" element={<Resources />} />
               <Route path="/verbs" element={<VerbPractice />} />
               <Route path="/pronunciation" element={<Pronunciation />} />
-              <Route path="/video-practice" element={<VideoPractice />} />
               <Route path="/flashcards" element={<Flashcards />} />
             </Routes>
       </div>

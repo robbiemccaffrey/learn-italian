@@ -27,3 +27,7 @@ dist-ssr
 .env
 .env.local
 .env.*.local
+
+# Learning materials (copyrighted content — kept locally only)
+Italian Learning Materials/
+backend/src/materials/materials-index.json

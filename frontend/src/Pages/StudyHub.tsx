@@ -182,13 +182,6 @@ export default function StudyHub() {
               <div className="text-2xl mb-2">🎤</div>
               <div className="text-sm font-medium text-slate-700">Pronunciation</div>
             </Link>
-            <Link
-              to="/video-practice"
-              className="text-center p-4 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
-            >
-              <div className="text-2xl mb-2">🎥</div>
-              <div className="text-sm font-medium text-slate-700">Video Practice</div>
-            </Link>
           </div>
         </div>
       </div>

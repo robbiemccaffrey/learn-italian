@@ -1,6 +1,7 @@
 import VerbPractice from "./Pages/VerbPractice";
 import Pronunciation from "./Pages/Pronunciation";
 import Flashcards from "./Pages/Flashcards";
+import PictureCards from "./Pages/PictureCards";
 import StudyHub from "./Pages/StudyHub";
 import DailyLife from "./Pages/DailyLife";
 import Communication from "./Pages/Communication";
@@ -15,6 +16,7 @@ const navItems = [
   { path: "/verbs", label: "Verbs", icon: "📖" },
   { path: "/pronunciation", label: "Pronounce", icon: "🎤" },
   { path: "/flashcards", label: "Flashcards", icon: "🃏" },
+  { path: "/picture-cards", label: "Pictures", icon: "🖼️" },
 ];
 
 function Navigation() {
@@ -91,6 +93,7 @@ export default function App() {
           <Route path="/verbs" element={<VerbPractice />} />
           <Route path="/pronunciation" element={<Pronunciation />} />
           <Route path="/flashcards" element={<Flashcards />} />
+          <Route path="/picture-cards" element={<PictureCards />} />
         </Routes>
       </div>
     </BrowserRouter>
